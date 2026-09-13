@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 counter = 0 #global counter to create an ID Number
 
@@ -43,3 +44,10 @@ async def delete(id: int):
             return
 
     raise HTTPException(status_code=404, detail="ERROR! Task not found ...")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

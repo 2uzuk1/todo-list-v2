@@ -2,3 +2,9 @@ body {
     font-family: "JetBrains Mono", monospace;
     font-style: bold;
 }
+
+.card {
+    border: 2px solid transparent;
+    background: linear-gradient(#f5f3ff, #f5f3ff) padding-box,
+                linear-gradient(to right, #06b6d4, #07748f) border-box;
+}
