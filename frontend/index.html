@@ -9,6 +9,7 @@
     <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap');
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body class="bg-[#f8fafc] flex flex-col items-center py-10">
@@ -21,11 +22,12 @@
             rounded-md py-2 px-3 w-full
             pr-14">
             <button class="absolute right-2 top-1/2 -translate-y-1/2
-            bg-[#0891b2] text-[#f5f3ff] rounded-md px-3 py-1
+            bg-[#0891b2] text-[#f5f3ff] rounded-md w-8 h-8
             flex items-center justify-center
             cursor-pointer
-            transition duration-300 ease-in-out hover:scale-110 hover:opacity-90 active:scale-100 active:opacity-100
-            " id="add-btn">+</button>
+            transition duration-300 ease-in-out hover:scale-110 active:scale-95
+            " id="add-btn"><i class="fa-solid fa-plus"></i>
+        </button>
         </div>
         <ul id="task-list" class="mt-6 bg-[#0891b2] text-[#f5f3ff] rounded-xl divide-y-4 divide-[#f5f3ff]"></ul>
     </div>
