@@ -13,13 +13,48 @@ function addTaskToList(task) {
 
     const deleteBtn = document.createElement('button')
     deleteBtn.textContent = 'x'
-    deleteBtn.className = 'text-[#0891b2] bg-[#f5f3ff] rounded-md px-3 py-1 font-bold transition duration-300 ease-in-out hover:scale-110 active:scale-100 active:opacity-100'
+    deleteBtn.className = 'text-[#0891b2] bg-[#f5f3ff] cursor-pointer rounded-md px-3 py-1 font-bold transition duration-300 ease-in-out hover:scale-110 active:scale-100'
     deleteBtn.addEventListener('click', function() {
         deleteTask(task.id)
     })
 
+    const checkBtn = document.createElement('input')
+    checkBtn.type = 'checkbox'
+    checkBtn.className = 'hidden'
+    checkBtn.id = `check-${task.id}`
+    checkBtn.checked = task.complete
+
+    const customCheck = document.createElement('div')
+    customCheck.className = 'w-8 h-8 rounded-md border-2 border-[#f5f3ff] cursor-pointer flex items-center justify-center text-[#0891b2] font-bold transition duration-300 ease-in-out hover:scale-110 active:scale-100'
+
+    if (task.complete) {
+        customCheck.classList.add('bg-[#f5f3ff]')
+        customCheck.textContent = '✓'
+        span.classList.add('line-through', 'opacity-50')
+    }
+
+    customCheck.addEventListener('click', function() {
+        checkBtn.checked = !checkBtn.checked
+        fetch(`http://127.0.0.1:8000/tasks/${task.id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({title: task.title, complete: checkBtn.checked})
+        })
+        if (checkBtn.checked) {
+            customCheck.classList.add('bg-[#f5f3ff]')
+            customCheck.textContent = '✓'
+            span.classList.add('line-through', 'opacity-50')
+        } else {
+            customCheck.classList.remove('bg-[#f5f3ff]')
+            customCheck.textContent = ''
+            span.classList.remove('line-through', 'opacity-50')
+        }
+    })
+        
+
     const rightDiv = document.createElement('div')
     rightDiv.className = 'flex items-center gap-2'
+    rightDiv.append(customCheck)
     rightDiv.append(deleteBtn)
 
     li.append(span)
