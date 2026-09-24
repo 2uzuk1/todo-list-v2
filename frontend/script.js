@@ -1,6 +1,8 @@
 const add_button = document.querySelector('#add-btn')
 const input_txt = document.querySelector('input')
 
+let editingId = null
+
 function addTaskToList(task) {
     const ul = document.querySelector('#task-list')
     const li = document.createElement('li')
@@ -29,7 +31,7 @@ function addTaskToList(task) {
 
     if (task.complete) {
         customCheck.classList.add('bg-[#f5f3ff]')
-        customCheck.textContent = '✓'
+        customCheck.innerHTML = '<i class="fa-solid fa-check"></i>'
         span.classList.add('line-through', 'opacity-50')
     }
 
@@ -46,17 +48,22 @@ function addTaskToList(task) {
             span.classList.add('line-through', 'opacity-50')
         } else {
             customCheck.classList.remove('bg-[#f5f3ff]')
-            customCheck.textContent = ''
+            customCheck.innerHTML = ''
             span.classList.remove('line-through', 'opacity-50')
         }
     })
-        
+    
     const editTask = document.createElement('button')
     editTask.innerHTML = '<i class="fa-solid fa-pen"></i>'
     editTask.className = 'w-8 h-8 bg-[#f5f3ff] rounded-md cursor-pointer transition duration-300 ease-in-out hover:scale-110 active:scale-100 text-[#0891b2]'
     editTask.addEventListener('click', function(){
-        
-    })
+        editingId = task.id
+        input_txt.value = span.textContent
+        add_button.innerHTML = '<i class="fa-solid fa-check"></i>'
+        input_txt.focus()
+        }
+
+    )
 
     const rightDiv = document.createElement('div')
     rightDiv.className = 'flex items-center gap-2'
@@ -73,17 +80,35 @@ add_button.addEventListener('click', function() {
     const title = input_txt.value
 
     if (title === '') return
+    if (editingId !== null) {
+        const isComplete = document.querySelector(`#check-${editingId}`)?.checked || false
 
-    fetch('http://127.0.0.1:8000/tasks', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({title: title, complete: false})
-    })
-    .then(response => response.json())
-    .then(task => {
-        addTaskToList(task)
-        input_txt.value = ''
-    })
+        fetch(`http://127.0.0.1:8000/tasks/${editingId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({title: title, complete: isComplete})
+        })
+        .then(response => response.json())
+        .then(updatedTask => {
+            const spanToUpdate = document.querySelector(`#task-${editingId} span`)
+            if (spanToUpdate) spanToUpdate.textContent = updatedTask.title
+
+            editingId = null
+            add_button.innerHTML = '<i class="fa-solid fa-plus"></i>'
+            input_txt.value = ''
+        })
+    } else {
+        fetch('http://127.0.0.1:8000/tasks', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({title: title, complete: false})
+        })
+        .then(response => response.json())
+        .then(task => {
+            addTaskToList(task)
+            input_txt.value = ''
+        })
+    }
 })
 
 function loadTasks() {
