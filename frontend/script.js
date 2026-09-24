@@ -1,5 +1,24 @@
 const add_button = document.querySelector('#add-btn')
 const input_txt = document.querySelector('input')
+const editHelper = document.querySelector('#edit-helper')
+
+function resetForm() {
+    editingId = null
+    add_button.innerHTML = '<i class="fa-solid fa-plus"></i>'
+    input_txt.value = ''
+    
+    editHelper.classList.add('hidden')
+    editHelper.classList.remove('flex')
+}
+
+input_txt.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault()
+        add_button.click()
+    } else if (event.key === 'Escape' && editingId !== null) {
+        resetForm()
+    }
+})
 
 let editingId = null
 
@@ -60,6 +79,10 @@ function addTaskToList(task) {
         editingId = task.id
         input_txt.value = span.textContent
         add_button.innerHTML = '<i class="fa-solid fa-check"></i>'
+
+        editHelper.classList.remove('hidden')
+        editHelper.classList.add('flex', 'items-center', 'gap-1')
+
         input_txt.focus()
         }
 
@@ -93,9 +116,7 @@ add_button.addEventListener('click', function() {
             const spanToUpdate = document.querySelector(`#task-${editingId} span`)
             if (spanToUpdate) spanToUpdate.textContent = updatedTask.title
 
-            editingId = null
-            add_button.innerHTML = '<i class="fa-solid fa-plus"></i>'
-            input_txt.value = ''
+            resetForm()
         })
     } else {
         fetch('http://127.0.0.1:8000/tasks', {
@@ -106,7 +127,7 @@ add_button.addEventListener('click', function() {
         .then(response => response.json())
         .then(task => {
             addTaskToList(task)
-            input_txt.value = ''
+            resetForm()
         })
     }
 })
