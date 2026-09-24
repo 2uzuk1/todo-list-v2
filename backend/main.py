@@ -6,6 +6,13 @@ counter = 0 #global counter to create an ID Number
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 class Task(BaseModel):
     title: str
     description: str | None = None
@@ -44,10 +51,3 @@ async def delete(id: int):
             return
 
     raise HTTPException(status_code=404, detail="ERROR! Task not found ...")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
