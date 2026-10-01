@@ -1,5 +1,5 @@
 const add_button = document.querySelector('#add-btn')
-const input_txt = document.querySelector('input')
+const input_txt = document.querySelector('#input_txt')
 const editHelper = document.querySelector('#edit-helper')
 
 function resetForm() {
