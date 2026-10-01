@@ -4,6 +4,11 @@ const editHelper = document.querySelector('#edit-helper')
 const API_BASE_URL = 'http://127.0.0.1:8000'
 
 function resetForm() {
+    if (editingId !== null) {
+        const deleteBtn = document.getElementById(`delete-${editingId}`)
+        if (deleteBtn) deleteBtn.disabled = false
+    }
+
     editingId = null
     add_button.innerHTML = '<i class="fa-solid fa-plus"></i>'
     input_txt.value = ''
@@ -35,7 +40,8 @@ function addTaskToList(task) {
 
     const deleteBtn = document.createElement('button')
     deleteBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>'
-    deleteBtn.className = 'text-[#0891b2] bg-[#f5f3ff] cursor-pointer rounded-md h-8 w-8 transition duration-300 ease-in-out hover:scale-110 active:scale-100'
+    deleteBtn.className = 'text-[#0891b2] bg-[#f5f3ff] cursor-pointer rounded-md h-8 w-8 transition duration-300 ease-in-out hover:scale-110 active:scale-100 disabled:opacity-50 disabled:cursor-default disabled:hover:scale-100'
+    deleteBtn.id = `delete-${task.id}`
     deleteBtn.addEventListener('click', function() {
         deleteTask(task.id)
     })
@@ -84,7 +90,14 @@ function addTaskToList(task) {
     editTask.innerHTML = '<i class="fa-solid fa-pen"></i>'
     editTask.className = 'w-8 h-8 bg-[#f5f3ff] rounded-md cursor-pointer transition duration-300 ease-in-out hover:scale-110 active:scale-100 text-[#0891b2]'
     editTask.addEventListener('click', function(){
+        if (editingId !== null) {
+            const previousDeleteBtn = document.getElementById(`delete-${editingId}`)
+
+            if (previousDeleteBtn) previousDeleteBtn.disabled = false
+        }
         editingId = task.id
+        deleteBtn.disabled = true
+
         input_txt.value = span.textContent
         add_button.innerHTML = '<i class="fa-solid fa-check"></i>'
 
