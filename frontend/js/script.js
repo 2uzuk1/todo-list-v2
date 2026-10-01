@@ -3,11 +3,32 @@ const input_txt = document.querySelector('#input_txt')
 const editHelper = document.querySelector('#edit-helper')
 const API_BASE_URL = 'http://127.0.0.1:8000'
 
+let pendingWrites = 0
+
+window.addEventListener('beforeunload', event => {
+    if (pendingWrites === 0) return
+
+    event.preventDefault()
+    event.returnValue = ''
+})
+
+async function saveRequest(url, options) {
+    pendingWrites++
+
+    return fetch(url, options)
+        .finally(() => {
+            pendingWrites--
+        })
+}
+
 function resetForm() {
     if (editingId !== null) {
         const deleteBtn = document.getElementById(`delete-${editingId}`)
         if (deleteBtn) deleteBtn.disabled = false
     }
+
+    const wrapper = document.getElementById(`delete-wrapper-${editingId}`)
+    if (wrapper) wrapper.removeAttribute('title')
 
     editingId = null
     add_button.innerHTML = '<i class="fa-solid fa-plus"></i>'
@@ -46,6 +67,11 @@ function addTaskToList(task) {
         deleteTask(task.id)
     })
 
+    const deleteWrapper = document.createElement(`span`)
+    deleteWrapper.id = `delete-wrapper-${task.id}`
+    deleteWrapper.className = 'inline-flex'
+    deleteWrapper.append(deleteBtn)
+
     const checkBtn = document.createElement('input')
     checkBtn.type = 'checkbox'
     checkBtn.className = 'hidden'
@@ -63,7 +89,7 @@ function addTaskToList(task) {
 
     customCheck.addEventListener('click', function() {
         const nextComplete = !checkBtn.checked
-        fetch(`${API_BASE_URL}/tasks/${task.id}`, {
+        saveRequest(`${API_BASE_URL}/tasks/${task.id}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({title: span.textContent, complete: nextComplete})
@@ -85,7 +111,7 @@ function addTaskToList(task) {
         })
         .catch(error => console.error(error))
     })
-    
+
     const editTask = document.createElement('button')
     editTask.innerHTML = '<i class="fa-solid fa-pen"></i>'
     editTask.className = 'w-8 h-8 bg-[#f5f3ff] rounded-md cursor-pointer transition duration-300 ease-in-out hover:scale-110 active:scale-100 text-[#0891b2]'
@@ -95,8 +121,10 @@ function addTaskToList(task) {
 
             if (previousDeleteBtn) previousDeleteBtn.disabled = false
         }
+        
         editingId = task.id
         deleteBtn.disabled = true
+        deleteWrapper.title = 'Save or Cancel the edition before excluding.'
 
         input_txt.value = span.textContent
         add_button.innerHTML = '<i class="fa-solid fa-check"></i>'
@@ -113,7 +141,7 @@ function addTaskToList(task) {
     rightDiv.className = 'flex items-center gap-2'
     rightDiv.append(customCheck)
     rightDiv.append(editTask)
-    rightDiv.append(deleteBtn)
+    rightDiv.append(deleteWrapper)
 
     li.append(span)
     li.append(checkBtn)
@@ -128,7 +156,7 @@ add_button.addEventListener('click', function() {
     if (editingId !== null) {
         const isComplete = document.querySelector(`#check-${editingId}`)?.checked ?? false
 
-        fetch(`${API_BASE_URL}/tasks/${editingId}`, {
+        saveRequest(`${API_BASE_URL}/tasks/${editingId}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({title: title, complete: isComplete})
@@ -146,7 +174,7 @@ add_button.addEventListener('click', function() {
         })
         .catch(error => console.error(error))
     } else {
-        fetch(`${API_BASE_URL}/tasks`, {
+        saveRequest(`${API_BASE_URL}/tasks`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({title: title, complete: false})
@@ -180,7 +208,7 @@ function loadTasks() {
 }
 
 function deleteTask(id) {
-    fetch(`${API_BASE_URL}/tasks/${id}`, {
+    saveRequest(`${API_BASE_URL}/tasks/${id}`, {
         method: 'DELETE'
     })
     .then(response => {
