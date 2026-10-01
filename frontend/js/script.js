@@ -1,6 +1,7 @@
 const add_button = document.querySelector('#add-btn')
 const input_txt = document.querySelector('#input_txt')
 const editHelper = document.querySelector('#edit-helper')
+const API_BASE_URL = 'http://127.0.0.1:8000'
 
 function resetForm() {
     editingId = null
@@ -55,21 +56,28 @@ function addTaskToList(task) {
     }
 
     customCheck.addEventListener('click', function() {
-        checkBtn.checked = !checkBtn.checked
-        fetch(`http://127.0.0.1:8000/tasks/${task.id}`, {
+        const nextComplete = !checkBtn.checked
+        fetch(`${API_BASE_URL}/tasks/${task.id}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({title: task.title, complete: checkBtn.checked})
+            body: JSON.stringify({title: span.textContent, complete: nextComplete})
         })
-        if (checkBtn.checked) {
-            customCheck.classList.add('bg-[#f5f3ff]')
-            customCheck.innerHTML = '<i class="fa-solid fa-check"></i>'
-            span.classList.add('line-through', 'opacity-50')
-        } else {
-            customCheck.classList.remove('bg-[#f5f3ff]')
-            customCheck.innerHTML = ''
-            span.classList.remove('line-through', 'opacity-50')
-        }
+        .then(response => {
+            if (!response.ok) throw new Error(`Request failed: ${response.status}`)
+
+            checkBtn.checked = nextComplete
+
+            if (nextComplete) {
+                customCheck.classList.add('bg-[#f5f3ff]')
+                customCheck.innerHTML = '<i class="fa-solid fa-check"></i>'
+                span.classList.add('line-through', 'opacity-50')
+            } else {
+                customCheck.classList.remove('bg-[#f5f3ff]')
+                customCheck.innerHTML = ''
+                span.classList.remove('line-through', 'opacity-50')
+            }
+        })
+        .catch(error => console.error(error))
     })
     
     const editTask = document.createElement('button')
@@ -95,60 +103,79 @@ function addTaskToList(task) {
     rightDiv.append(deleteBtn)
 
     li.append(span)
+    li.append(checkBtn)
     li.append(rightDiv)
     ul.append(li)
 }
 
 add_button.addEventListener('click', function() {
-    const title = input_txt.value
+    const title = input_txt.value.trim()
 
     if (title === '') return
     if (editingId !== null) {
-        const isComplete = document.querySelector(`#check-${editingId}`)?.checked || false
+        const isComplete = document.querySelector(`#check-${editingId}`)?.checked ?? false
 
-        fetch(`http://127.0.0.1:8000/tasks/${editingId}`, {
+        fetch(`${API_BASE_URL}/tasks/${editingId}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({title: title, complete: isComplete})
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) throw new Error(`Request failed: ${response.status}`)
+            
+            return response.json()
+        })
         .then(updatedTask => {
             const spanToUpdate = document.querySelector(`#task-${editingId} span`)
             if (spanToUpdate) spanToUpdate.textContent = updatedTask.title
 
             resetForm()
         })
+        .catch(error => console.error(error))
     } else {
-        fetch('http://127.0.0.1:8000/tasks', {
+        fetch(`${API_BASE_URL}/tasks`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({title: title, complete: false})
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) throw new Error(`Request failed: ${response.status}`)
+            
+            return response.json()
+        })
         .then(task => {
             addTaskToList(task)
             resetForm()
         })
+        .catch(error => console.error(error))
     }
 })
 
 function loadTasks() {
-    fetch('http://127.0.0.1:8000/tasks')
-    .then(response => response.json())
+    fetch(`${API_BASE_URL}/tasks`)
+    .then(response => {
+        if (!response.ok) throw new Error(`Request failed: ${response.status}`)
+
+        return response.json()
+    })
     .then(tasks => {
         console.log(tasks)
 
         tasks.forEach(task => addTaskToList(task))
     })
+    .catch(error => console.error(error))
 }
 
 function deleteTask(id) {
-    fetch(`http://127.0.0.1:8000/tasks/${id}`, {
+    fetch(`${API_BASE_URL}/tasks/${id}`, {
         method: 'DELETE'
     })
-    .then(() => {
+    .then(response => {
+        if (!response.ok) throw new Error(`Request failed:${response.status}`)
+
         document.querySelector(`#task-${id}`).remove()
     })
+    .catch(error => console.error(error))
 }
 
 loadTasks()
